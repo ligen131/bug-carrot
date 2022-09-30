@@ -6,6 +6,7 @@ import (
 	"bug-carrot/param"
 	"bug-carrot/util"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -216,6 +217,12 @@ func (p *dailyproblem) queryDailyproblem(date string, isAdmin bool, isAnnounce b
 	}
 	req := ""
 	now := time.Now()
+	year, _ := strconv.Atoi(date[0:4])
+	month, _ := strconv.Atoi(date[4:6])
+	day, _ := strconv.Atoi(date[6:8])
+	if !isAdmin && (year > now.Year() || month > int(now.Month()) || day > now.Day()) {
+		date = now.Format("20060102")
+	}
 	if !isAdmin && date == now.Format("20060102") {
 		dpy, err := m.GetDailyproblemByDate(now.Add(-24 * time.Hour).Format("20060102"))
 		if now.Hour() < 8 || dp.Div1Problem == "" || dp.Div2Problem == "" {
