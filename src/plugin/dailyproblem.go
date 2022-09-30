@@ -222,6 +222,11 @@ func (p *dailyproblem) queryDailyproblem(date string, isAdmin bool, isAnnounce b
 	day, _ := strconv.Atoi(date[6:8])
 	if !isAdmin && (year > now.Year() || month > int(now.Month()) || day > now.Day()) {
 		date = now.Format("20060102")
+		dp, err = m.GetDailyproblemByDate(date)
+		if (err != nil || dp == param.Dailyproblem{}) {
+			util.ErrorPrint(err, date, fmt.Sprintf("查询每日一题出错 date=%s", date))
+			return fmt.Sprintf("%s 没有每日一题哦\n", date), err
+		}
 	}
 	if !isAdmin && date == now.Format("20060102") {
 		dpy, err := m.GetDailyproblemByDate(now.Add(-24 * time.Hour).Format("20060102"))
