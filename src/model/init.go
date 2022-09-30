@@ -2,8 +2,9 @@ package model
 
 import (
 	"context"
-	"go.mongodb.org/mongo-driver/mongo"
 	"time"
+
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Model interface {
@@ -12,6 +13,7 @@ type Model interface {
 	FoodInterface
 	ScheduleInterface
 	KeyWordInterface
+	DailyproblemInterface
 }
 
 type model struct {

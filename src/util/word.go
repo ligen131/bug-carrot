@@ -2,9 +2,10 @@ package util
 
 import (
 	"bug-carrot/param"
-	"github.com/yanyiwu/gojieba"
 	"strings"
 	"sync"
+
+	"github.com/yanyiwu/gojieba"
 )
 
 var jiebaMutex sync.Mutex

@@ -31,19 +31,20 @@ func main() {
 // 注意顺序
 func pluginRegister() {
 
-	plugin.HomeworkPluginRegister()   // 作业
-	plugin.SchedulePluginRegister()   // 任务清单
+	// plugin.HomeworkPluginRegister()   // 作业
+	// plugin.SchedulePluginRegister()   // 任务清单
 	plugin.CodeforcesPluginRegister() // CF
-	plugin.FoodPluginRegister()       // 吃什么
-	plugin.WeatherPluginRegister()    // 天气
-	plugin.DicePluginRegister()       // 骰子
-	plugin.KeyWordPluginRegister()    // 关键词
+	// plugin.FoodPluginRegister()       // 吃什么
+	// plugin.WeatherPluginRegister()    // 天气
+	// plugin.DicePluginRegister()       // 骰子
+	// plugin.KeyWordPluginRegister()    // 关键词
 
-	plugin.GoodMorningPluginRegister() // 早安
-	plugin.GoodNightPluginRegister()   // 晚安
-	plugin.RepeatPluginRegister()      // 重复
+	// plugin.GoodMorningPluginRegister()  // 早安
+	// plugin.GoodNightPluginRegister()    // 晚安
+	plugin.RepeatPluginRegister()       // 重复
+	plugin.DailyproblemPluginRegister() // 每日一题
 
-	plugin.DefaultPluginRegister() // 默认回复
+	// plugin.DefaultPluginRegister() // 默认回复
 }
 
 // signalWaiter 接收项目停止时的 SIGINT 和 SIGTERM 信号
