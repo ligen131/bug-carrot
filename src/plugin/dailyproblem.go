@@ -36,8 +36,11 @@ type dailyproblem struct {
 	SolutionAnnounced string
 }
 
-var dailyproblemAdminAccount = []int64{
-	1353055672,
+var dailyproblemAdminGroup = []int64{
+	444185515,
+	706605585,
+	285976171,
+	786012798,
 } // 💩
 
 var dailyproblemGroup = []int64{
@@ -115,7 +118,7 @@ func (p *dailyproblem) IsMatchedGroup(msg param.GroupMessage) bool {
 
 // DoMatchedGroup : 收到了想收到的群 @ 消息，要做什么呢？
 func (p *dailyproblem) DoMatchedGroup(msg param.GroupMessage) error {
-	sendText, _ := p.doDailyproblemActions(msg.UserId, msg.RawMessage)
+	sendText, _ := p.doDailyproblemActions(msg.GroupId, msg.UserId, msg.RawMessage)
 	group := msg.GroupId
 	util.QQGroupSend(group, sendText)
 	return nil
@@ -130,7 +133,7 @@ func (p *dailyproblem) IsMatchedPrivate(msg param.PrivateMessage) bool {
 // DoMatchedPrivate : 收到了想收到的私聊消息，要做什么呢？
 // 备注：我们建议大部分功能只对群聊开启，增强 bot 在群聊中的存在感，私聊功能可以提供给管理员
 func (p *dailyproblem) DoMatchedPrivate(msg param.PrivateMessage) error {
-	sendText, _ := p.doDailyproblemActions(msg.UserId, msg.RawMessage)
+	sendText, _ := p.doDailyproblemActions(0, msg.UserId, msg.RawMessage)
 	user := msg.UserId
 	util.QQSend(user, sendText)
 	return nil
@@ -141,7 +144,7 @@ func (p *dailyproblem) DoMatchedPrivate(msg param.PrivateMessage) error {
 // 除去整活效果较好的特殊场景，我们一般希望 bot 只有在被 @ 到的时候才会对应s发言
 func (p *dailyproblem) Listen(msg param.GroupMessage) {
 	if msg.ExistWord("r", []string{"每日"}) && msg.ExistWord("n", []string{"一题"}) {
-		sendText, _ := p.doDailyproblemActions(msg.UserId, msg.RawMessage)
+		sendText, _ := p.doDailyproblemActions(msg.GroupId, msg.UserId, msg.RawMessage)
 		group := msg.GroupId
 		util.QQGroupSend(group, sendText)
 	}
@@ -302,7 +305,7 @@ func (p *dailyproblem) updateDailyproblemAll(date string, link1 string, link2 st
 	return req, nil
 }
 
-func (p *dailyproblem) doDailyproblemActions(UserId int64, message string) (string, error) {
+func (p *dailyproblem) doDailyproblemActions(GroupId int64, UserId int64, message string) (string, error) {
 	msg := strings.Split(message, " ")
 	size := len(msg)
 	if size == 0 {
@@ -313,8 +316,8 @@ func (p *dailyproblem) doDailyproblemActions(UserId int64, message string) (stri
 	}
 	ti := time.Now()
 	isAdmin := false
-	for _, account := range dailyproblemAdminAccount {
-		if account == UserId {
+	for _, account := range dailyproblemAdminGroup {
+		if account == GroupId {
 			isAdmin = true
 			break
 		}
