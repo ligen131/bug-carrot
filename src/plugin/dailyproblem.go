@@ -93,6 +93,7 @@ func (p *dailyproblem) DoTime() error {
 			return err
 		}
 		for _, group := range dailyproblemGroup {
+			query += `今天的题解来啦！\n`
 			util.QQGroupSend(group, query)
 		}
 		p.SolutionAnnounced = now.Format("20060102")
@@ -103,6 +104,7 @@ func (p *dailyproblem) DoTime() error {
 			return err
 		}
 		for _, group := range dailyproblemGroup {
+			query += `今天的每日一题来啦！\n`
 			util.QQGroupSend(group, query)
 		}
 		p.ProblemAnnounced = now.Format("20060102")
