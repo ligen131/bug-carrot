@@ -236,6 +236,24 @@ func (p *dailyproblem) isMatched(message string) bool {
 	return false
 }
 
+// 0->日期不合法  1->未来  -1->过去或今天
+func (p *dailyproblem) checkDateFormat(date string) int {
+	if len(date) != 8 {
+		return 0
+	}
+	now := time.Now()
+	year, _ := strconv.Atoi(date[0:4])
+	month, _ := strconv.Atoi(date[4:6])
+	day, _ := strconv.Atoi(date[6:8])
+	if year < 1970 || year > 3000 || month < 1 || month > 12 || day < 1 || day > 31 {
+		return 0
+	} // 没有检查月份、闰年合法性等
+	if year > now.Year() || month > int(now.Month()) || day > now.Day() {
+		return 1
+	}
+	return -1
+}
+
 func (p *dailyproblem) queryDailyproblem(date string, isAdmin bool, isAnnounce bool) (string, error) {
 	m := model.GetModel()
 	defer m.Close()
@@ -247,10 +265,10 @@ func (p *dailyproblem) queryDailyproblem(date string, isAdmin bool, isAnnounce b
 	}
 	req := ""
 	now := time.Now()
-	year, _ := strconv.Atoi(date[0:4])
-	month, _ := strconv.Atoi(date[4:6])
-	day, _ := strconv.Atoi(date[6:8])
-	if !isAdmin && (year > now.Year() || month > int(now.Month()) || day > now.Day()) {
+	ch := p.checkDateFormat(date)
+	if ch == -1 {
+		return "日期不合法！请检查输入\n", fmt.Errorf("日期不合法")
+	} else if ch == 1 {
 		date = now.Format("20060102")
 		dp, err = m.GetDailyproblemByDate(date)
 		if (err != nil || dp == param.Dailyproblem{}) {
@@ -370,8 +388,10 @@ func (p *dailyproblem) doDailyproblemActions(GroupId int64, UserId int64, messag
 			} else {
 				return p.Words.HelpQuery, nil
 			}
-		} else if size >= 6 && msg[1] == p.Words.Setting && isAdmin {
-			if msg[3] == p.Words.Div1 || msg[3] == p.Words.Div2 {
+		} else if size >= 2 && msg[1] == p.Words.Setting && !isAdmin {
+			return "抱歉！您没有权限修改每日一题\n", fmt.Errorf("非管理员操作每日一题")
+		} else if size >= 2 && msg[1] == p.Words.Setting && isAdmin {
+			if size >= 6 && (msg[3] == p.Words.Div1 || msg[3] == p.Words.Div2) {
 				date := msg[2]
 				div := 1
 				isProblem := true
