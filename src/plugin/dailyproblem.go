@@ -268,7 +268,7 @@ func (p *dailyproblem) queryDailyproblem(date string, isAdmin bool, isAnnounce b
 	ch := p.checkDateFormat(date)
 	if ch == 0 {
 		return "日期不合法！请检查输入\n", fmt.Errorf("日期不合法")
-	} else if ch == 1 {
+	} else if !isAdmin && ch == 1 {
 		date = now.Format("20060102")
 		dp, err = m.GetDailyproblemByDate(date)
 		if (err != nil || dp == param.Dailyproblem{}) {
