@@ -115,7 +115,7 @@ func (p *dailyproblem) DoTime() error {
 // IsMatchedGroup : 是你想收到的群 @ 消息吗？
 func (p *dailyproblem) IsMatchedGroup(msg param.GroupMessage) bool {
 	return msg.ExistWord("r", []string{"每日"}) &&
-		msg.ExistWord("n", []string{"一题"})
+		msg.ExistWord("n", []string{"一题"}) && p.isMatched(msg.RawMessage)
 }
 
 // DoMatchedGroup : 收到了想收到的群 @ 消息，要做什么呢？
@@ -129,7 +129,7 @@ func (p *dailyproblem) DoMatchedGroup(msg param.GroupMessage) error {
 // IsMatchedPrivate : 是你想收到的私聊消息吗？
 func (p *dailyproblem) IsMatchedPrivate(msg param.PrivateMessage) bool {
 	return msg.ExistWord("r", []string{"每日"}) &&
-		msg.ExistWord("n", []string{"一题"})
+		msg.ExistWord("n", []string{"一题"}) && p.isMatched(msg.RawMessage)
 }
 
 // DoMatchedPrivate : 收到了想收到的私聊消息，要做什么呢？
@@ -145,7 +145,7 @@ func (p *dailyproblem) DoMatchedPrivate(msg param.PrivateMessage) error {
 // 备注：我们建议只对极少数的功能采取监听行为
 // 除去整活效果较好的特殊场景，我们一般希望 bot 只有在被 @ 到的时候才会对应s发言
 func (p *dailyproblem) Listen(msg param.GroupMessage) {
-	if msg.ExistWord("r", []string{"每日"}) && msg.ExistWord("n", []string{"一题"}) {
+	if msg.ExistWord("r", []string{"每日"}) && msg.ExistWord("n", []string{"一题"}) && p.isMatched(msg.RawMessage) {
 		sendText, _ := p.doDailyproblemActions(msg.GroupId, msg.UserId, msg.RawMessage)
 		group := msg.GroupId
 		util.QQGroupSend(group, sendText)
@@ -185,20 +185,20 @@ func DailyproblemPluginRegister() {
 			Help1:        "帮助",
 			Help2:        "help",
 			HelpQuery: `每日一题 帮助列表
-[今天/昨天/n*前天]每日一题
-每日一题 查询 {date} - date 格式为 yyyymmdd，如 20221001
-每日一题 帮助 - 打开此帮助
+➢[今天/昨天/n*前天]每日一题
+➢每日一题 查询 {date} - date 格式为 yyyymmdd，如 20221001
+➢每日一题 帮助 - 打开此帮助
 
 每天 8:00 公布当天每日一题，20:00 公布题解（自动）
 前往 https://vjudge.net/group/hustacm 查看历史每日一题
 每日一题投稿：https://docs.qq.com/sheet/DV0t0RGZBV1ZMdHhz
 `,
 			HelpSetting: `每日一题 管理员设置
-[今天/昨天/n*前天]每日一题
-每日一题 查询 {date} - date 格式为 yyyymmdd，如 20221001
-每日一题 帮助 - 打开此帮助
-每日一题 设置 {date} {link1} {link2} {link3} {link4} - 四个{link}分别代表 div1 题目, div1 题解, div2 题目, div2 题解
-每日一题 设置 {date} div1/div2 题目/题解 {link} - 更新/设置特定 div 题目/题解链接，注意参数中间有空格，div 和数字之间没有空格，如 每日一题 设置 div1 题解 https://codeforces/...
+➢[今天/昨天/n*前天]每日一题
+➢每日一题 查询 {date} - date 格式为 yyyymmdd，如 20221001
+➢每日一题 帮助 - 打开此帮助
+➢每日一题 设置 {date} {link1} {link2} {link3} {link4} - 四个{link}分别代表 div1 题目, div1 题解, div2 题目, div2 题解
+➢每日一题 设置 {date} div1/div2 题目/题解 {link} - 更新/设置特定 div 题目/题解链接，注意参数中间有空格，div 和数字之间没有空格，如 每日一题 设置 div1 题解 https://codeforces/...
 
 每天 8:00 公布当天每日一题，20:00 公布题解（自动）
 前往 https://vjudge.net/group/hustacm 查看历史每日一题
@@ -209,6 +209,31 @@ func DailyproblemPluginRegister() {
 		SolutionAnnounced: "20220930",
 	}
 	controller.PluginRegister(p)
+}
+
+func (p *dailyproblem) isMatched(message string) bool {
+	msg := strings.Split(message, " ")
+	size := len(msg)
+	if size == 0 {
+		return false
+	}
+	if strings.Index(msg[0], "CQ:at") >= 0 {
+		if size == 1 {
+			return false
+		} else {
+			msg = msg[1:]
+		}
+	}
+	if ind := strings.Index(msg[0], p.Words.Day); ind > 0 {
+		if len(msg[0]) >= ind+5 && msg[0][ind+1:] == p.Words.DailyProblem {
+			return true
+		}
+	} else {
+		if len(msg[0]) >= 4 && msg[0] == p.Words.DailyProblem {
+			return true
+		}
+	}
+	return false
 }
 
 func (p *dailyproblem) queryDailyproblem(date string, isAdmin bool, isAnnounce bool) (string, error) {
