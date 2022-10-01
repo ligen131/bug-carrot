@@ -205,7 +205,7 @@ func DailyproblemPluginRegister() {
 每日一题投稿：https://docs.qq.com/sheet/DV0t0RGZBV1ZMdHhz
 `,
 		},
-		ProblemAnnounced:  "20220930",
+		ProblemAnnounced:  "20221001",
 		SolutionAnnounced: "20220930",
 	}
 	controller.PluginRegister(p)
@@ -266,7 +266,7 @@ func (p *dailyproblem) queryDailyproblem(date string, isAdmin bool, isAnnounce b
 	req := ""
 	now := time.Now()
 	ch := p.checkDateFormat(date)
-	if ch == -1 {
+	if ch == 0 {
 		return "日期不合法！请检查输入\n", fmt.Errorf("日期不合法")
 	} else if ch == 1 {
 		date = now.Format("20060102")
