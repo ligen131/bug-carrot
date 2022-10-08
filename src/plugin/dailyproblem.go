@@ -30,10 +30,11 @@ type dailyproblemWords struct {
 }
 
 type dailyproblem struct {
-	Index             param.PluginIndex
-	Words             dailyproblemWords
-	ProblemAnnounced  string
-	SolutionAnnounced string
+	Index                param.PluginIndex
+	Words                dailyproblemWords
+	ProblemAnnounced     string
+	SolutionAnnounced    string
+	AdminNoticeAnnounced string
 }
 
 var dailyproblemAdminGroup = []int64{
@@ -41,6 +42,11 @@ var dailyproblemAdminGroup = []int64{
 	706605585,
 	285976171,
 	786012798,
+} // 💩
+
+var dailyproblemAdminNoticeGroup = []int64{
+	706605585,
+	285976171,
 } // 💩
 
 var dailyproblemGroup = []int64{
@@ -79,13 +85,22 @@ func (p *dailyproblem) DoIgnoreRiskControl() bool {
 // IsTime : 是你需要的时间吗？
 func (p *dailyproblem) IsTime() bool {
 	now := time.Now()
-	return ((now.Hour() >= 8 && p.ProblemAnnounced != now.Format("20060102")) ||
-		(now.Hour() >= 20 && p.SolutionAnnounced != now.Format("20060102"))) && now.Minute() <= 10
+	return (((now.Hour() >= 8 && p.ProblemAnnounced != now.Format("20060102")) ||
+		(now.Hour() >= 20 && p.SolutionAnnounced != now.Format("20060102"))) && now.Minute() <= 10) ||
+		(p.AdminNoticeAnnounced != now.Format("20060102"))
 }
 
 // DoTime : 当到了你需要的时间，要做什么呢？
 func (p *dailyproblem) DoTime() error {
 	now := time.Now()
+	if p.AdminNoticeAnnounced != now.Format("20060102") {
+		if p.checkTodayProblem() != nil {
+			for _, group := range dailyproblemAdminNoticeGroup {
+				util.QQGroupSend(group, "今天的每日一题还没有添加哦！请及时添加。")
+			}
+		}
+		p.AdminNoticeAnnounced = now.Format("20060102")
+	}
 	if now.Hour() >= 20 && p.SolutionAnnounced != now.Format("20060102") {
 		query, err := p.queryDailyproblem(now.Format("20060102"), false, false)
 		query = "今天的题解来啦！\n" + query
@@ -205,8 +220,9 @@ func DailyproblemPluginRegister() {
 每日一题投稿：https://docs.qq.com/sheet/DV0t0RGZBV1ZMdHhz
 `,
 		},
-		ProblemAnnounced:  "20221001",
-		SolutionAnnounced: "20220930",
+		ProblemAnnounced:     "20221001",
+		SolutionAnnounced:    "20220930",
+		AdminNoticeAnnounced: "20220930",
 	}
 	controller.PluginRegister(p)
 }
@@ -302,6 +318,14 @@ func (p *dailyproblem) queryDailyproblem(date string, isAdmin bool, isAnnounce b
 		req += fmt.Sprintf("【%s 每日一题】\nDiv.1: %s\nDiv.2: %s\n【题解】\nDiv.1: %s\nDiv.2: %s\n", date, dp.Div1Problem, dp.Div2Problem, dp.Div1Solution, dp.Div2Solution)
 	}
 	return req, nil
+}
+
+func (p *dailyproblem) checkTodayProblem() error {
+	m := model.GetModel()
+	defer m.Close()
+
+	_, err := m.GetDailyproblemByDate(time.Now().Format("20060102"))
+	return err
 }
 
 func (p *dailyproblem) updateDailyproblem(date string, div int, isProblem bool, link string) (string, error) {
