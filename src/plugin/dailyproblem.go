@@ -88,23 +88,23 @@ func (p *dailyproblem) DoTime() error {
 	now := time.Now()
 	if now.Hour() >= 20 && p.SolutionAnnounced != now.Format("20060102") {
 		query, err := p.queryDailyproblem(now.Format("20060102"), false, false)
+		query = "今天的题解来啦！\n" + query
 		if err != nil {
 			util.ErrorPrint(err, nil, "定时任务出错！无法发送题目公告。")
 			return err
 		}
 		for _, group := range dailyproblemGroup {
-			query += `今天的题解来啦！\n`
 			util.QQGroupSend(group, query)
 		}
 		p.SolutionAnnounced = now.Format("20060102")
 	} else if now.Hour() >= 8 && p.ProblemAnnounced != now.Format("20060102") && p.SolutionAnnounced != now.Format("20060102") {
 		query, err := p.queryDailyproblem(now.Format("20060102"), false, true)
+		query = "今天的每日一题来啦！\n" + query
 		if err != nil {
 			util.ErrorPrint(err, nil, "定时任务出错！无法发送题目公告。")
 			return err
 		}
 		for _, group := range dailyproblemGroup {
-			query += `今天的每日一题来啦！\n`
 			util.QQGroupSend(group, query)
 		}
 		p.ProblemAnnounced = now.Format("20060102")
@@ -225,7 +225,8 @@ func (p *dailyproblem) isMatched(message string) bool {
 		}
 	}
 	if ind := strings.Index(msg[0], p.Words.Day); ind > 0 {
-		if len(msg[0]) >= ind+5 && msg[0][ind+1:] == p.Words.DailyProblem {
+		fmt.Println(ind, len(msg[0]), msg[0], msg[0][ind+3:])
+		if len(msg[0]) >= ind+12 && msg[0][ind+3:] == p.Words.DailyProblem {
 			return true
 		}
 	} else {
@@ -255,6 +256,10 @@ func (p *dailyproblem) checkDateFormat(date string) int {
 }
 
 func (p *dailyproblem) queryDailyproblem(date string, isAdmin bool, isAnnounce bool) (string, error) {
+	ch := p.checkDateFormat(date)
+	if ch == 0 {
+		return "日期不合法！请检查输入\n", fmt.Errorf("日期不合法")
+	}
 	m := model.GetModel()
 	defer m.Close()
 
@@ -265,10 +270,7 @@ func (p *dailyproblem) queryDailyproblem(date string, isAdmin bool, isAnnounce b
 	}
 	req := ""
 	now := time.Now()
-	ch := p.checkDateFormat(date)
-	if ch == 0 {
-		return "日期不合法！请检查输入\n", fmt.Errorf("日期不合法")
-	} else if !isAdmin && ch == 1 {
+	if !isAdmin && ch == 1 {
 		date = now.Format("20060102")
 		dp, err = m.GetDailyproblemByDate(date)
 		if (err != nil || dp == param.Dailyproblem{}) {

@@ -41,7 +41,7 @@ func pluginRegister() {
 
 	// plugin.GoodMorningPluginRegister()  // 早安
 	// plugin.GoodNightPluginRegister()    // 晚安
-	plugin.RepeatPluginRegister()       // 重复
+	// plugin.RepeatPluginRegister()       // 重复
 	plugin.DailyproblemPluginRegister() // 每日一题
 
 	// plugin.DefaultPluginRegister() // 默认回复
