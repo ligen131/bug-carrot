@@ -52,6 +52,7 @@ var dailyproblemAdminNoticeGroup = []int64{
 var dailyproblemGroup = []int64{
 	706605585,
 	744140247,
+	948791043,
 } // 💩
 
 func (p *dailyproblem) GetPluginName() string {
