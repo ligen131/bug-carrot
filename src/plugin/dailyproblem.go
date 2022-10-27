@@ -40,19 +40,20 @@ type dailyproblem struct {
 var dailyproblemAdminGroup = []int64{
 	444185515,
 	706605585,
-	285976171,
+	792788317,
 	786012798,
 } // 💩
 
 var dailyproblemAdminNoticeGroup = []int64{
 	706605585,
-	285976171,
+	792788317,
 } // 💩
 
 var dailyproblemGroup = []int64{
 	706605585,
 	744140247,
 	948791043,
+	792788317,
 } // 💩
 
 func (p *dailyproblem) GetPluginName() string {
